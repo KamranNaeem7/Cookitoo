@@ -42,12 +42,11 @@ function Signup() {
 
   const onSignupPress = () => {
     console.log(userName, email, password);
-    // firebase.firestore().collection("users").doc("id0003").set({
-    //   user_name: userName,
-    //   user_email: email,
-    //   user_password: password,
-    // });
-    //
+    firebase.firestore().collection("users").doc("id0003").set({
+      user_name: userName,
+      user_email: email,
+      user_password: password,
+    });
 
     uploadImage(imageFromCamera || imageFromPicker);
   };
