@@ -1,3 +1,6 @@
+/** colors of the application //
+ *
+ */
 const colors = {
   primary: "rgba(219,48,34,1)",
   secondary: "rgba(0,0,0,1)",
@@ -10,8 +13,13 @@ const colors = {
 
 const modifiers = {
   containerPadding: 10,
-  itemMargin: 20,
+  itemMargin: 10,
 };
 
 export { colors };
 export { modifiers };
+
+/*
+ *
+ * export {colors, modifiers}
+ * */

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Camera, CameraType } from "expo-camera";
 import {
   View,
   ScrollView,
@@ -7,15 +6,16 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import { BButton } from "../../components/BButton";
 import { Header } from "../../components/header";
 import { Input } from "../../components/input";
 import { TextButton } from "../../components/textButton";
 import { colors, modifiers } from "../../utils/theme";
-
+import { firebase } from "../../services/firebaseConfig";
 import { MediaPicker } from "../../components/mediapicker";
+import { CustomCamera } from "../../components/customCamera";
+import { uploadImage } from "../../services/uploadImage";
 
 function Signup() {
   const [showPass, setShowPass] = useState(false);
@@ -23,6 +23,9 @@ function Signup() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [isPickerShown, setIsPickerShown] = useState(false);
+  const [isCameraShown, setIsCameraShown] = useState(false);
+  const [imageFromPicker, setImageFromPicker] = useState("");
+  const [imageFromCamera, setImageFromCamera] = useState("");
 
   const handleShowPass = () => {
     if (showPass === true) {
@@ -32,13 +35,21 @@ function Signup() {
     }
   };
 
+  const onImageCameFromGallery = (image) => {
+    setImageFromPicker(image.uri);
+    setIsPickerShown(false);
+  };
+
   const onSignupPress = () => {
     console.log(userName, email, password);
-    firebase.firestore().collection("users").doc("id0002").set({
-      user_name: userName,
-      user_email: email,
-      user_password: password,
-    });
+    // firebase.firestore().collection("users").doc("id0003").set({
+    //   user_name: userName,
+    //   user_email: email,
+    //   user_password: password,
+    // });
+    //
+
+    uploadImage(imageFromCamera || imageFromPicker);
   };
 
   const onImagePressed = () => {
@@ -47,6 +58,8 @@ function Signup() {
     } else if (isPickerShown === false) {
       setIsPickerShown(true);
     }
+    // lin51  does the same sa all from 45 to 49
+    // setIsPickerShown(!isPickerShown)
   };
 
   return (
@@ -56,7 +69,11 @@ function Signup() {
       <Header title={"Sign up"} />
       <TouchableOpacity onPress={onImagePressed}>
         <View style={styles.pickImgCircle}>
-          <Ionicons name={"md-image-sharp"} color={"white"} size={50} />
+          <Image
+            source={{ uri: imageFromPicker || imageFromCamera }}
+            style={{ width: 100, height: 100, borderRadius: 50 }}
+            resizeMode={"contain"}
+          />
         </View>
       </TouchableOpacity>
 
@@ -90,7 +107,27 @@ function Signup() {
         <BButton title={"Sign up"} onButtonPress={onSignupPress} />
       </View>
 
-      <MediaPicker show={isPickerShown} onClose={onImagePressed} />
+      <MediaPicker
+        show={isPickerShown}
+        onClose={onImagePressed}
+        onImagePickerSelected={(imageSelcted) => {
+          onImageCameFromGallery(imageSelcted);
+        }}
+        onCameraPressed={() => {
+          setIsCameraShown(!isCameraShown);
+        }}
+      />
+
+      <CustomCamera
+        show={isCameraShown}
+        onClose={() => setIsCameraShown(false)}
+        onPictureTaken={(response) => {
+          setIsCameraShown(false);
+          setIsPickerShown(false);
+          // if image came it will add the uri in our state
+          setImageFromCamera(response.uri);
+        }}
+      />
     </ScrollView>
   );
 }

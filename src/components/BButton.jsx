@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, Text } from "react-native";
-import { colors } from "../utils/theme";
+import { colors, modifiers } from "../utils/theme";
 
 function BButton({ title = "title", bgColor = colors.primary, onButtonPress }) {
   return (
@@ -7,11 +7,11 @@ function BButton({ title = "title", bgColor = colors.primary, onButtonPress }) {
       style={[styles.btnCon, { backgroundColor: bgColor }]}
       onPress={onButtonPress}
     >
-      <Text style={StyleSheet.btnTitle}>{title}</Text>
+      <Text style={styles.btnTitle}>{title}</Text>
     </TouchableOpacity>
   );
 }
-
+// doing a non-default export is a trend for smaller components
 export { BButton };
 
 const styles = StyleSheet.create({
