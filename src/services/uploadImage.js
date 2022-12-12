@@ -1,11 +1,13 @@
+import { getARandomImageName } from "../utils/help";
 import { firebase } from "./firebaseConfig";
 
 function uploadImage(imgUri) {
   makeBlob(imgUri)
     .then((imageBlob) => {
       const userStorageRef = firebase.storage().ref("users/");
+      const imageName = getARandomImageName();
       userStorageRef
-        .child("dummyImage_dember6")
+        .child(imageName)
         .put(imageBlob)
         .then((uploadResponse) => {})
         .catch((uploadError) => {});
@@ -21,4 +23,4 @@ const makeBlob = async (img) => {
   return theBlob;
 };
 
-export { uploadImage };
+export { uploadImage, makeBlob };

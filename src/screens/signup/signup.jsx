@@ -1,13 +1,17 @@
 import { useState } from "react";
+import Toast from "react-native-toast-message";
+
 import {
   View,
   ScrollView,
   StyleSheet,
   Image,
   TouchableOpacity,
+  Text,
 } from "react-native";
 
 import { BButton } from "../../components/BButton";
+import { Loading } from "../../components/loading";
 import { Header } from "../../components/header";
 import { Input } from "../../components/input";
 import { TextButton } from "../../components/textButton";
@@ -15,17 +19,24 @@ import { colors, modifiers } from "../../utils/theme";
 import { firebase } from "../../services/firebaseConfig";
 import { MediaPicker } from "../../components/mediapicker";
 import { CustomCamera } from "../../components/customCamera";
-import { uploadImage } from "../../services/uploadImage";
+import { makeBlob } from "../../services/uploadImage";
+import { getARandomImageName, showToast } from "../../utils/help";
+import { GenderSelector } from "../../components/genderSelector";
 
 function Signup() {
   const [showPass, setShowPass] = useState(false);
-  const [userName, setUserName] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [gender, setGender] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isPickerShown, setIsPickerShown] = useState(false);
   const [isCameraShown, setIsCameraShown] = useState(false);
   const [imageFromPicker, setImageFromPicker] = useState("");
   const [imageFromCamera, setImageFromCamera] = useState("");
+  const [showLoading, setShowLoading] = useState(false);
+  const [showGender, setShowGender] = useState(false);
+  const [selectedGender, setSelectedGender] = useState();
 
   const handleShowPass = () => {
     if (showPass === true) {
@@ -41,14 +52,41 @@ function Signup() {
   };
 
   const onSignupPress = () => {
-    console.log(userName, email, password);
-    firebase.firestore().collection("users").doc("id0003").set({
-      user_name: userName,
-      user_email: email,
-      user_password: password,
-    });
+    //create a user account in firebase auth then upload image
+    setShowLoading(true);
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then((authResponse) => {
+        if (authResponse.user.uid) {
+          const uid = authResponse.user.uid;
+          saveUserDataToFireStore(uid);
+        }
+      })
+      .catch((authError) => {
+        setShowLoading(false);
+        showToast("error", authError.message, "top");
+      });
+  };
 
-    uploadImage(imageFromCamera || imageFromPicker);
+  const saveUserDataToFireStore = (uid) => {
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(uid)
+      .set({
+        firstName,
+        lastName,
+        gender: selectedGender,
+      })
+      .then((response) => {
+        showToast("success", "registered successfully proceed to login", "top");
+        setShowLoading(false);
+      })
+      .catch((error) => {
+        showToast("error", error.message, "top");
+        setShowLoading(false);
+      });
   };
 
   const onImagePressed = () => {
@@ -60,6 +98,33 @@ function Signup() {
     // lin51  does the same sa all from 45 to 49
     // setIsPickerShown(!isPickerShown)
   };
+
+  function uploadImage(imgUri) {
+    makeBlob(imgUri)
+      .then((imageBlob) => {
+        const userStorageRef = firebase.storage().ref("users/");
+        const imageName = getARandomImageName();
+        userStorageRef
+          .child(imageName)
+          .put(imageBlob)
+          .then((uploadResponse) => {
+            setShowLoading(false);
+
+            Toast.show({
+              type: "success",
+              text1: "Hello",
+              text2: "This is some something 👋",
+              position: "bottom",
+            });
+          })
+          .catch((uploadError) => {
+            setShowLoading(false);
+          });
+      })
+      .catch((blobError) => {
+        setShowLoading(false);
+      });
+  }
 
   return (
     <ScrollView
@@ -78,9 +143,16 @@ function Signup() {
 
       <View style={styles.formCon}>
         <Input
-          placeholder={"User Name"}
+          placeholder={"First Name"}
           showIcon={true}
-          onChange={setUserName}
+          onChange={setFirstName}
+          iconName={"person-outline"}
+        />
+
+        <Input
+          placeholder={"Last Name"}
+          showIcon={true}
+          onChange={setLastName}
           iconName={"person-outline"}
         />
 
@@ -99,6 +171,14 @@ function Signup() {
           iconName={showPass === false ? "eye-outline" : "eye-off-outline"}
           onIconPress={handleShowPass}
         />
+
+        <TouchableOpacity
+          style={{ marginHorizontal: 10 }}
+          onPress={() => setShowGender(true)}
+        >
+          <Text>Select Gender</Text>
+          <Text>{selectedGender?.label}</Text>
+        </TouchableOpacity>
 
         <View style={styles.textBtnCon}>
           <TextButton title={"Already have an account?"} />
@@ -125,6 +205,15 @@ function Signup() {
           setIsPickerShown(false);
           // if image came it will add the uri in our state
           setImageFromCamera(response.uri);
+        }}
+      />
+      {showLoading && <Loading />}
+      <Toast />
+      <GenderSelector
+        show={showGender}
+        onGenderSelected={(gender) => {
+          setSelectedGender(gender);
+          setShowGender(false);
         }}
       />
     </ScrollView>
