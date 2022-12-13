@@ -4,7 +4,7 @@ import { View, Text } from "react-native";
 function Main() {
   return (
     <View>
-      <Text>Main Page </Text>
+      <Text>Main Page thanks </Text>
       <Toast />
     </View>
   );
