@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet, Text } from "react-native";
 import Toast from "react-native-toast-message";
 
 import { BButton } from "../../components/BButton";
@@ -10,12 +10,22 @@ import { Loading } from "../../components/loading";
 import { colors, modifiers } from "../../utils/theme";
 import { firebase } from "../../services/firebaseConfig";
 import { showToast } from "../../utils/help";
+import {
+  getUserId,
+  storeUserSession,
+  getUserLoggedInStatus,
+} from "../../services/storageService";
 
 function Signin({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
+
+  const loggedIn = getUserLoggedInStatus();
+  const UID = getUserId();
+  console.log("my_uid", UID);
+  console.log("user_logged", loggedIn);
 
   const handleShowPass = () => {
     if (showPass === true) {
@@ -37,7 +47,12 @@ function Signin({ navigation }) {
       .signInWithEmailAndPassword(email, password)
       .then((authResponse) => {
         setShowLoading(false);
-        navigation.navigate("Main");
+
+        const userUid = authResponse.user.uid;
+
+        storeUserSession(userUid, "true");
+
+        navigation.replace("Home");
         showToast("success", "you are the authentic useer CONGO", "top");
         //  now we need a session of user and also take him to goToHome()
       })
@@ -82,6 +97,8 @@ function Signin({ navigation }) {
       </View>
       {showLoading && <Loading />}
       <Toast />
+
+      <Text>hello</Text>
     </ScrollView>
   );
 }
