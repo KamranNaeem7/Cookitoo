@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Text,
 } from "react-native";
 
 import { BButton } from "../../components/BButton";
@@ -20,10 +21,12 @@ import { MediaPicker } from "../../components/mediapicker";
 import { CustomCamera } from "../../components/customCamera";
 import { makeBlob } from "../../services/uploadImage";
 import { getARandomImageName, showToast } from "../../utils/help";
+import { GenderSelector } from "../../components/genderSelector";
 
-function Signup() {
+function Signup({ navigation }) {
   const [showPass, setShowPass] = useState(false);
-  const [userName, setUserName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPickerShown, setIsPickerShown] = useState(false);
@@ -31,6 +34,8 @@ function Signup() {
   const [imageFromPicker, setImageFromPicker] = useState("");
   const [imageFromCamera, setImageFromCamera] = useState("");
   const [showLoading, setShowLoading] = useState(false);
+  const [showGender, setShowGender] = useState(false);
+  const [selectedGender, setSelectedGender] = useState();
 
   const handleShowPass = () => {
     if (showPass === true) {
@@ -46,27 +51,44 @@ function Signup() {
   };
 
   const onSignupPress = () => {
-    console.log(userName, email, password);
     //create a user account in firebase auth then upload image
     setShowLoading(true);
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
       .then((authResponse) => {
-        uploadImage(imageFromCamera || imageFromPicker);
-        showToast("success", "registered successfully proceed to login", "top");
+        if (authResponse.user.uid) {
+          const uid = authResponse.user.uid;
+          uploadImage(uid);
+          //UPLOAD AN IMAGE PROCESS
+        }
       })
       .catch((authError) => {
         setShowLoading(false);
         showToast("error", authError.message, "top");
       });
+  };
 
-    // firebase.firestore().collection("users").doc("id0003").set({
-    //   user_name: userName,
-    //   user_email: email,
-    //   user_password: password,
-    // });
-    //
+  const saveUserDataToFireStore = (uid, imageUrlOnServer) => {
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(uid)
+      .set({
+        firstName,
+        lastName,
+        gender: selectedGender,
+        profile_url: imageUrlOnServer,
+      })
+      .then((response) => {
+        setShowLoading(false);
+        navigation.goBack();
+        showToast("success", "registered successfully proceed to login", "top");
+      })
+      .catch((error) => {
+        showToast("error", error.message, "top");
+        setShowLoading(false);
+      });
   };
 
   const onImagePressed = () => {
@@ -79,8 +101,10 @@ function Signup() {
     // setIsPickerShown(!isPickerShown)
   };
 
-  function uploadImage(imgUri) {
-    makeBlob(imgUri)
+  function uploadImage(uid) {
+    const imageUri = imageFromCamera || imageFromPicker;
+
+    makeBlob(imageUri)
       .then((imageBlob) => {
         const userStorageRef = firebase.storage().ref("users/");
         const imageName = getARandomImageName();
@@ -88,16 +112,26 @@ function Signup() {
           .child(imageName)
           .put(imageBlob)
           .then((uploadResponse) => {
-            setShowLoading(false);
+            // will fetch uploaded image url for us
+            firebase
+              .storage()
+              .ref("users/" + imageName)
+              .getDownloadURL()
+              .then((downloadRes) => {
+                const imageUrlOnServer = downloadRes;
 
-            Toast.show({
-              type: "success",
-              text1: "Hello",
-              text2: "This is some something 👋",
-              position: "bottom",
-            });
+                // passing the UID and url to add data to firestore function
+                saveUserDataToFireStore(uid, imageUrlOnServer);
+              })
+              .catch((downlaodErr) => {
+                showToast("error", downlaodErr.message);
+                setShowLoading(false);
+              });
+
+            // get the url from response and then add it with the data to firebase with uid
           })
           .catch((uploadError) => {
+            showToast("error", uploadError.message);
             setShowLoading(false);
           });
       })
@@ -123,9 +157,16 @@ function Signup() {
 
       <View style={styles.formCon}>
         <Input
-          placeholder={"User Name"}
+          placeholder={"First Name"}
           showIcon={true}
-          onChange={setUserName}
+          onChange={setFirstName}
+          iconName={"person-outline"}
+        />
+
+        <Input
+          placeholder={"Last Name"}
+          showIcon={true}
+          onChange={setLastName}
           iconName={"person-outline"}
         />
 
@@ -144,6 +185,14 @@ function Signup() {
           iconName={showPass === false ? "eye-outline" : "eye-off-outline"}
           onIconPress={handleShowPass}
         />
+
+        <TouchableOpacity
+          style={{ marginHorizontal: 10 }}
+          onPress={() => setShowGender(true)}
+        >
+          <Text>Select Gender</Text>
+          <Text>{selectedGender?.label}</Text>
+        </TouchableOpacity>
 
         <View style={styles.textBtnCon}>
           <TextButton title={"Already have an account?"} />
@@ -174,6 +223,13 @@ function Signup() {
       />
       {showLoading && <Loading />}
       <Toast />
+      <GenderSelector
+        show={showGender}
+        onGenderSelected={(gender) => {
+          setSelectedGender(gender);
+          setShowGender(false);
+        }}
+      />
     </ScrollView>
   );
 }

@@ -21,6 +21,7 @@ function Signin({ navigation }) {
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
+
   const loggedIn = getUserLoggedInStatus();
   const UID = getUserId();
   console.log("my_uid", UID);

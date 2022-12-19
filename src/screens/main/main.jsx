@@ -1,17 +1,61 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, ImageBackground } from "react-native";
+import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  FlatList,
+} from "react-native";
 import Toast from "react-native-toast-message";
 import { FloatingAction } from "react-native-floating-action";
 
 import Swiper from "react-native-swiper";
 import { colors } from "../../utils/theme";
 import { AddRecipy } from "../../components/addRecipy";
+import { Loading } from "../../components/loading";
+import { firebase } from "../../services/firebaseConfig";
 
 const sliderHeight = 250;
 const slideHight = 250;
 
 function Main() {
   const [showAddRecipy, setShowAddRecipy] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+  const [recipieData, setRecipieData] = useState([]);
+
+  // when this component/screen will load infront of user
+  useEffect(() => {
+    fetchRecipesFromDB();
+  }, []);
+
+  const fetchRecipesFromDB = () => {
+    setShowLoading(true);
+    firebase
+      .firestore()
+      .collection("recipies")
+      .get()
+      .then((response) => {
+        setRecipieData(response.docs);
+        setShowLoading(false);
+      })
+      .catch((error) => {
+        console.log({ error });
+        setShowLoading(false);
+      });
+  };
+
+  const __renderItem = ({ item }) => {
+    const recipy = item.data();
+
+    return (
+      <ImageBackground
+        style={{ width: 100, height: 100, margin: 5 }}
+        source={{ uri: recipy.recipyImageUrl }}
+      >
+        <Text style={{ color: "white" }}>{recipy.title}</Text>
+      </ImageBackground>
+    );
+  };
 
   const famousRecipies = [
     {
@@ -58,6 +102,15 @@ function Main() {
         </Swiper>
       </View>
 
+      <FlatList
+        data={recipieData}
+        horizontal={true}
+        renderItem={__renderItem}
+        ListEmptyComponent={<Text>no recipies found </Text>}
+        refreshing={showLoading}
+        onRefresh={() => fetchRecipesFromDB()}
+      />
+
       <Toast />
       <FloatingAction
         color={colors.primary}
@@ -67,6 +120,8 @@ function Main() {
       />
 
       <AddRecipy show={showAddRecipy} onClose={() => setShowAddRecipy(false)} />
+
+      {showLoading && <Loading />}
     </View>
   );
 }
