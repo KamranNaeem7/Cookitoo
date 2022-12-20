@@ -5,15 +5,19 @@ import {
   StyleSheet,
   ImageBackground,
   FlatList,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { FloatingAction } from "react-native-floating-action";
+import dayjs from "dayjs";
 
 import Swiper from "react-native-swiper";
 import { colors } from "../../utils/theme";
 import { AddRecipy } from "../../components/addRecipy";
 import { Loading } from "../../components/loading";
 import { firebase } from "../../services/firebaseConfig";
+import { showToast } from "../../utils/help";
 
 const sliderHeight = 250;
 const slideHight = 250;
@@ -44,16 +48,33 @@ function Main() {
       });
   };
 
+  const onRecipyLongPress = (recipyId) => {
+    firebase
+      .firestore()
+      .collection("recipies")
+      .doc(recipyId)
+      .delete()
+      .then((response) => {
+        showToast("success", "your recipy got deleted");
+      })
+      .catch((error) => {
+        showToast("error", error.message);
+      });
+  };
+
   const __renderItem = ({ item }) => {
     const recipy = item.data();
+    const recipyId = item.id;
 
     return (
-      <ImageBackground
-        style={{ width: 100, height: 100, margin: 5 }}
-        source={{ uri: recipy.recipyImageUrl }}
-      >
-        <Text style={{ color: "white" }}>{recipy.title}</Text>
-      </ImageBackground>
+      <TouchableOpacity onLongPress={() => onRecipyLongPress(recipyId)}>
+        <ImageBackground
+          style={{ width: 100, height: 100, margin: 5 }}
+          source={{ uri: recipy.recipyImageUrl }}
+        >
+          <Text style={{ color: "white" }}>{recipy.title}</Text>
+        </ImageBackground>
+      </TouchableOpacity>
     );
   };
 
@@ -110,6 +131,10 @@ function Main() {
         refreshing={showLoading}
         onRefresh={() => fetchRecipesFromDB()}
       />
+
+      <Text style={{ fontSize: 50 }}>
+        {dayjs().diff(dayjs("1994-10-08"), "year")}
+      </Text>
 
       <Toast />
       <FloatingAction
