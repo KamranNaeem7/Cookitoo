@@ -5,9 +5,15 @@ import { showToast } from "../../utils/help";
 import Toast from "react-native-toast-message";
 import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
+import { clearUserSession } from "../../services/storageService";
 
-function Settings() {
+function Settings({ navigation }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const attemptToLogout = () => {
+    clearUserSession();
+    navigation.replace("Signin");
+  };
 
   const openCalendar = () => {
     Animated.timing(fadeAnim, {
@@ -23,6 +29,7 @@ function Settings() {
       </Animated.View>
 
       <Calendar minDate={dayjs().format("YYYY-MM-DD")} />
+      <BButton onButtonPress={attemptToLogout} title={"Sign Out"} />
       <Toast />
     </View>
   );

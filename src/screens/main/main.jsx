@@ -18,11 +18,13 @@ import { AddRecipy } from "../../components/addRecipy";
 import { Loading } from "../../components/loading";
 import { firebase } from "../../services/firebaseConfig";
 import { showToast } from "../../utils/help";
+import { BButton } from "../../components/BButton";
+import { Counter } from "../../components/counter";
 
 const sliderHeight = 250;
 const slideHight = 250;
 
-function Main() {
+function Main({ navigation }) {
   const [showAddRecipy, setShowAddRecipy] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
   const [recipieData, setRecipieData] = useState([]);
@@ -132,8 +134,17 @@ function Main() {
         onRefresh={() => fetchRecipesFromDB()}
       />
 
+      <View style={{ backgroundColor: "red", height: 100, width: "100%" }}>
+        <Counter />
+      </View>
+
+      <BButton
+        title={"go to recipies lists"}
+        onButtonPress={() => navigation.navigate("Recipies")}
+      />
+
       <Text style={{ fontSize: 50 }}>
-        {dayjs().diff(dayjs("1994-10-08"), "year")}
+        {dayjs().diff(dayjs("1972-10-08"), "year")}
       </Text>
 
       <Toast />

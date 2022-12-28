@@ -9,6 +9,10 @@ import { Main } from "../screens/main/main";
 import { WebPage } from "../screens/webpage/webpage";
 import { Splash } from "../screens/splash/splash";
 import { Settings } from "../screens/settings/settings";
+import { Recipies } from "../screens/recipes/recipies";
+import { RecipeDetail } from "../screens/recipeDetail/recipeDetail";
+import { VideoPage } from "../screens/videoPage/videopage";
+import { MapArea } from "../screens/mapArea/maparea";
 
 function MainNav() {
   const Stack = createNativeStackNavigator();
@@ -48,10 +52,14 @@ function MainNav() {
           headerShown: false,
         }}
       >
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Splash" component={Splash} />
         <Stack.Screen name="Signin" component={Signin} />
         <Stack.Screen name="Signup" component={Signup} />
+        <Stack.Screen name="Splash" component={Splash} />
+        <Stack.Screen name="Recipies" component={Recipies} />
+        <Stack.Screen name="RecipeDetail" component={RecipeDetail} />
+        <Stack.Screen name="Home" component={Home} />
+        <Stack.Screen name="MapArea" component={MapArea} />
+        <Stack.Screen name="VideoPage" component={VideoPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -3,16 +3,17 @@ import "@firebase/firestore";
 import "@firebase/storage";
 import "@firebase/auth";
 
+// Initialize Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDz3jL0qyVOQnO0A1sDJA0BJj4eNivHGU8",
-  authDomain: "travelapp-8c7af.firebaseapp.com",
-  projectId: "travelapp-8c7af",
-  storageBucket: "travelapp-8c7af.appspot.com",
-  messagingSenderId: "528556581150",
-  appId: "1:528556581150:web:f82d6d5bd4b0ee264f290f",
-  measurementId: "G-EE21RKLWCW",
+  apiKey: "AIzaSyAe0C8PRVm51cFdig3yCauf8kqHGXPZOzg",
+  authDomain: "cookito-15ce2.firebaseapp.com",
+  projectId: "cookito-15ce2",
+  storageBucket: "cookito-15ce2.appspot.com",
+  messagingSenderId: "66584450964",
+  appId: "1:66584450964:web:82031a7d6354766ec16181",
+  measurementId: "G-5S3FPC4FZF",
 };
-
+// if user has already opened app atleasonce connect with FIREBASE
 if (firebase.apps.length > 0 === false) {
   firebase.initializeApp(firebaseConfig);
 }
