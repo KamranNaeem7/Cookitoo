@@ -97,8 +97,6 @@ function Signin({ navigation }) {
       </View>
       {showLoading && <Loading />}
       <Toast />
-
-      <Text>hello</Text>
     </ScrollView>
   );
 }

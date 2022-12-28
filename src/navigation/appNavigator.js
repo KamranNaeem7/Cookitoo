@@ -42,6 +42,7 @@ function MainNav() {
       <Tab.Screen name={"Main"} component={Main} />
       <Tab.Screen name={"WebPage"} component={WebPage} />
       <Tab.Screen name={"Settings"} component={Settings} />
+      <Tab.Screen name={"MapArea"} component={MapArea} />
     </Tab.Navigator>
   );
 
